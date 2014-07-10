@@ -19,7 +19,11 @@
     // If you're on a multi-display system and you want to capture a secondary display,
     // you can call CGGetActiveDisplayList() to get the list of all active displays.
     // For this example, we just specify the main display.
+    //CGDirectDisplayID displayID = [[screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
+    //NSArray *screenArray = [NSScreen screens];
+
     CGDirectDisplayID displayId = kCGDirectMainDisplay;
+    //NSRect frame = window.frame;
     
     // Create a ScreenInput with the display and add it to the session
     AVCaptureScreenInput *input = [[[AVCaptureScreenInput alloc] initWithDisplayID:displayId] autorelease];
@@ -31,6 +35,9 @@
     // crop rect: https://github.com/appium/screen_recording/blob/master/screen-recording/main.m
     // https://github.com/square/zapp/blob/master/Zapp/ZappVideoController.m
     CGRect displayBounds = CGDisplayBounds(displayId);
+    //displayBounds.size.width = 2880;
+    //displayBounds.size.height = 1800;
+    NSLog(@"Dispaly bounds capture (x,y,w,h): %f %f %f %f", displayBounds.origin.x, displayBounds.origin.y, displayBounds.size.width, displayBounds.size.height);
     input.cropRect = CGRectMake(rect.origin.x - displayBounds.origin.x, displayBounds.size.height - displayBounds.origin.y - rect.origin.y - rect.size.height, rect.size.width, rect.size.height);
     input.removesDuplicateFrames = 0; // frame rate of export drops
     input.capturesCursor = 0;

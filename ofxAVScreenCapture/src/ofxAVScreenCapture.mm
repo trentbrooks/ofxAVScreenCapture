@@ -53,9 +53,11 @@ void ofxAVScreenCapture::threadedFunction() {
                 path = [path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
                 NSURL *dest = [[NSURL alloc] init];
                 dest = [NSURL fileURLWithPath:path];
-                
-                //ofRectangle r = ofGetWindowRect();
-                CGRect rect = CGRectMake(ofGetWindowPositionX(), ofGetWindowPositionY(), ofGetWindowWidth(), ofGetWindowHeight());
+                                
+                // retina fix (only works for glfw) - dividing window coords by pixel scale
+                ofAppGLFWWindow* glWindow = (ofAppGLFWWindow*)ofGetWindowPtr();
+                int pixelsScale = glWindow->getPixelScreenCoordScale();
+                CGRect rect = CGRectMake(ofGetWindowPositionX()/pixelsScale, ofGetWindowPositionY()/pixelsScale, ofGetWindowWidth()/pixelsScale, ofGetWindowHeight()/pixelsScale);
                 
                 //[(AVScreenCapture *)recorder screenRecording:dest];
                 [(AVScreenCapture *)recorder startRecording:dest withRect:rect withFps:fps];
