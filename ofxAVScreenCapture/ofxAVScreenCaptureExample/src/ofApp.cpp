@@ -42,6 +42,7 @@ void ofApp::keyPressed(int key){
             capture.startRecording("capture.mov", 60.0);
         } else {
             capture.stopRecording();
+            //capture.waitForThread();
         }
     }
 }

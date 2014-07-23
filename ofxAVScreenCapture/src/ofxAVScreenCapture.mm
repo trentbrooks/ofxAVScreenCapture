@@ -60,7 +60,7 @@ void ofxAVScreenCapture::threadedFunction() {
                 CGRect rect = CGRectMake(ofGetWindowPositionX()/pixelsScale, ofGetWindowPositionY()/pixelsScale, ofGetWindowWidth()/pixelsScale, ofGetWindowHeight()/pixelsScale);
                 
                 //[(AVScreenCapture *)recorder screenRecording:dest];
-                [(AVScreenCapture *)recorder startRecording:dest withRect:rect withFps:fps];
+                [(AVScreenCapture *)recorder startRecording:dest withRect:rect andFps:fps];
             }
         } else {
             

@@ -10,7 +10,7 @@
 }
 
 
--(void)startRecording:(NSURL *)destPath withRect:(CGRect)rect withFps:(int)fps;
+-(void)startRecording:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps; //forScreenIndex:(uint32_t)screenIndex 
 -(void)stopRecording;
 
 @end

@@ -2,6 +2,8 @@
 #include "ofMain.h"
 #include "ofAppGLFWWindow.h"
 
+
+
 class ofxAVScreenCapture : public ofThread {
 public:
     

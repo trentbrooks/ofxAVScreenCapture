@@ -2,12 +2,14 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+// TODO: maybe remove windows rounded corner edges at the bottom- http://apple.stackexchange.com/questions/50280/how-can-i-disable-rounded-window-corners-in-os-x
 
 //--------------------------------------------------------------
 @implementation AVScreenCapture
 
--(void)startRecording:(NSURL *)destPath withRect:(CGRect)rect withFps:(int)fps {
+-(void)startRecording:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps {
 //-(void)startRecording:(NSURL *)destPath withWidth:(int)width withHeight:(int)height withFps:(int)fps {
+    //forScreenIndex:(uint32_t)screenIndex 
     
     // Create a capture session
     mSession = [[AVCaptureSession alloc] init];
@@ -19,11 +21,16 @@
     // If you're on a multi-display system and you want to capture a secondary display,
     // you can call CGGetActiveDisplayList() to get the list of all active displays.
     // For this example, we just specify the main display.
-    //CGDirectDisplayID displayID = [[screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
-    //NSArray *screenArray = [NSScreen screens];
+    CGDirectDisplayID displayId = kCGDirectMainDisplay; // get's the main display
+    
+    // gets the display with the point as defined by the rect origin
+    CGDirectDisplayID theID;
+    CGDisplayCount theCount;
+    CGDisplayErr err = CGGetDisplaysWithPoint(rect.origin, 1, &theID, &theCount);
+    if(err == kCGErrorSuccess) {
+        displayId = theID;
+    }
 
-    CGDirectDisplayID displayId = kCGDirectMainDisplay;
-    //NSRect frame = window.frame;
     
     // Create a ScreenInput with the display and add it to the session
     AVCaptureScreenInput *input = [[[AVCaptureScreenInput alloc] initWithDisplayID:displayId] autorelease];
