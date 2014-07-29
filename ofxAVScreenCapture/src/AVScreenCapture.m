@@ -9,7 +9,9 @@
 
 -(void)startRecording:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps {
 //-(void)startRecording:(NSURL *)destPath withWidth:(int)width withHeight:(int)height withFps:(int)fps {
-    //forScreenIndex:(uint32_t)screenIndex 
+    //forScreenIndex:(uint32_t)screenIndex
+    
+    mDestPath = destPath;
     
     // Create a capture session
     mSession = [[AVCaptureSession alloc] init];
@@ -62,6 +64,59 @@
     
     
     
+    //[self begin:destPath];
+    NSLog(@"Started capture (x,y,w,h,fps): %f %f %f %f %d", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height, fps);
+}
+
+// starts a recording with the default audio capture device (probably microphone)
+-(void)startRecordingWithDefaultAudio:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps {
+    
+    [self startRecording:destPath withRect:rect andFps:fps];
+    
+    AVCaptureDevice *audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+    AVCaptureDeviceInput * audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioDevice error:nil];
+    if ([mSession canAddInput:audioInput]) {
+        [mSession addInput:audioInput];
+        NSLog(@"Added default audio input: %@", audioDevice.uniqueID);
+    }
+}
+
+-(void)startRecordingWithAudioDeviceID:(NSString *)uniqueID forPath:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps {
+    
+    [self startRecording:destPath withRect:rect andFps:fps];
+    
+    //[self listAudioDevices];
+    AVCaptureDevice *audioDevice = [AVCaptureDevice deviceWithUniqueID:uniqueID];
+    AVCaptureDeviceInput * audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioDevice error:nil];
+    if ([mSession canAddInput:audioInput]) {
+        [mSession addInput:audioInput];
+        NSLog(@"Added audio input with unique id: %@", audioDevice.uniqueID);
+    }
+}
+
+-(void)startRecordingWithAudioDeviceIndex:(int)deviceIndex forPath:(NSURL *)destPath withRect:(CGRect)rect andFps:(int)fps {
+    
+    [self startRecording:destPath withRect:rect andFps:fps];
+    
+    //[self listAudioDevices];
+    NSArray *audioDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeAudio];
+    for (int i = 0; i < [audioDevices count]; i++) {
+        if(i == deviceIndex) {
+            AVCaptureDevice* audioDevice = [audioDevices objectAtIndex:i];
+            AVCaptureDeviceInput * audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioDevice error:nil];
+            if ([mSession canAddInput:audioInput]) {
+                [mSession addInput:audioInput];
+                NSLog(@"Added audio input with unique id: %@", audioDevice.uniqueID);
+            }
+            break;
+        }
+        
+    }
+}
+
+// once session setup, and video + audio inputs added, start recording
+-(void)begin {
+    
     // Create a MovieFileOutput and add it to the session
     mMovieFileOutput = [[[AVCaptureMovieFileOutput alloc] init] autorelease];
     if ([mSession canAddOutput:mMovieFileOutput])
@@ -71,10 +126,10 @@
     [mSession startRunning];
     
     // Delete any existing movie file first
-    if ([[NSFileManager defaultManager] fileExistsAtPath:[destPath path]])
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[mDestPath path]])
     {
         NSError *err;
-        if (![[NSFileManager defaultManager] removeItemAtPath:[destPath path] error:&err])
+        if (![[NSFileManager defaultManager] removeItemAtPath:[mDestPath path] error:&err])
         {
             NSLog(@"Error deleting existing movie %@",[err localizedDescription]);
         }
@@ -83,11 +138,12 @@
     // Start recording to the destination movie file
     // The destination path is assumed to end with ".mov", for example, @"/users/master/desktop/capture.mov"
     // Set the recording delegate to self
-    [mMovieFileOutput startRecordingToOutputFileURL:destPath recordingDelegate:self];
+    [mMovieFileOutput startRecordingToOutputFileURL:mDestPath recordingDelegate:self];
     
-    NSLog(@"Started capture (x,y,w,h,fps): %f %f %f %f %d", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height, fps);
-
+    
 }
+
+
 
 
 -(void)stopRecording {
@@ -104,7 +160,15 @@
     
 }
 
-
+-(void)listAudioDevices {
+    
+    // list all audio devices - not sure which audio input to choose - so using default?
+    NSArray *audioDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeAudio];
+    for (int i = 0; i < [audioDevices count]; i++) {
+        AVCaptureDevice* d = [audioDevices objectAtIndex:i];
+        NSLog(@"Audio input device\nindex: %d\nuniqueID: %@\nobject: %@", i, d.uniqueID, d);
+    }
+}
 
 // AVCaptureFileOutputRecordingDelegate methods
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error

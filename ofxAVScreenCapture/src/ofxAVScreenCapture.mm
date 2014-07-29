@@ -7,8 +7,12 @@
 //--------------------------------------------------------------
 ofxAVScreenCapture::ofxAVScreenCapture(){
     bRecording = bRecordInitialised = false;
+    bRecordAudio = false;
+    audioDeviceIndex = -1;
     outputPath = "capture.mov";
     fps = 60;
+    
+    recorder = [[AVScreenCapture alloc] init];
 }
 
 ofxAVScreenCapture::~ofxAVScreenCapture() {
@@ -31,11 +35,32 @@ void ofxAVScreenCapture::startRecording(string outputPath, int fps) {
     startThread();
 }
 
+void ofxAVScreenCapture::startRecordingWithDefaultAudio(string outputPath, int fps) {
+    
+    bRecordAudio = true;
+    startRecording(outputPath, fps);
+}
+
+void ofxAVScreenCapture::startRecordingWithAudioDevice(int deviceIndex, string outputPath, int fps) {
+    
+    bRecordAudio = true;
+    audioDeviceIndex = deviceIndex;
+    startRecording(outputPath, fps);
+}
+
 void ofxAVScreenCapture::stopRecording() {
     
     bRecording = false;
+    bRecordAudio = false;
+    audioDeviceIndex = -1;
 }
 
+
+//--------------------------------------------------------------
+void ofxAVScreenCapture::listAudioDevices() {
+    
+    [(AVScreenCapture *)recorder listAudioDevices];
+}
 
 //--------------------------------------------------------------
 void ofxAVScreenCapture::threadedFunction() {
@@ -47,7 +72,7 @@ void ofxAVScreenCapture::threadedFunction() {
                 
                 ofLog() << "Beginning AVF recording";
                 bRecordInitialised = true;
-                recorder = [[AVScreenCapture alloc] init];
+                //recorder = [[AVScreenCapture alloc] init];
                 string localPath = ofToDataPath(outputPath);
                 NSString *path = [[NSString alloc] initWithString:[NSString stringWithUTF8String:localPath.c_str()]];
                 path = [path stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -62,7 +87,17 @@ void ofxAVScreenCapture::threadedFunction() {
                 CGRect rect = CGRectMake(ofGetWindowPositionX()/pixelsScale, ofGetWindowPositionY()/pixelsScale, ofGetWindowWidth()/pixelsScale, ofGetWindowHeight()/pixelsScale);
                 
                 //[(AVScreenCapture *)recorder screenRecording:dest];
-                [(AVScreenCapture *)recorder startRecording:dest withRect:rect andFps:fps];
+                if(bRecordAudio) {
+                    if(audioDeviceIndex >= 0)
+                        [(AVScreenCapture *)recorder startRecordingWithAudioDeviceIndex:audioDeviceIndex forPath:dest withRect:rect andFps:fps];
+                    else
+                        [(AVScreenCapture *)recorder startRecordingWithDefaultAudio:dest withRect:rect andFps:fps];
+                } else {
+                    [(AVScreenCapture *)recorder startRecording:dest withRect:rect andFps:fps];
+                }
+                    
+                
+                [(AVScreenCapture *)recorder begin];
             }
         } else {
             

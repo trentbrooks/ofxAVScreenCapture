@@ -1,16 +1,25 @@
 #include "ofApp.h"
 
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
     ofSetFrameRate(60);
-
+    
+    // for capturing sound - we need to know which audio device to capture, default is microphone
+    // if want to record the system audio (like this example), need to download SoundFlower http://cycling74.com/products/soundflower/ and set that as the input (same as how ScreenFlick works)
+    // remember to switch the audio device in system prefs: http://apple.stackexchange.com/questions/50904/if-we-use-soundflower-to-record-the-systems-audio-output-then-we-cant-hear-it
+    capture.listAudioDevices();
+    
+    sound.loadSound("1085.mp3");
+    sound.play();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
     ofSetWindowTitle((capture.isRecording() ? "RECORDING" : "Not recording"));
+    ofSoundUpdate();
 }
 
 //--------------------------------------------------------------
@@ -40,10 +49,14 @@ void ofApp::keyPressed(int key){
     if(key == ' ') {
         if(!capture.isRecording()) {
             
-            capture.startRecording("capture.mov", 60.0);
-        } else {
+            // record options
+            //capture.startRecording("capture.mov", 60.0);
+            //capture.startRecordingWithDefaultAudio("capture.mov", 60.0);
+            capture.startRecordingWithAudioDevice(0, "capture.mov", 60.0); // SoundflowerEngine:0
             
+        } else {
             capture.stopRecording();
+            //capture.waitForThread();
         }
     }
 }
